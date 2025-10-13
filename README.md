@@ -1,8 +1,8 @@
 #  EN202 - Blackjack en VHDL ♠️
 
-Un projet amusant et technique : recréer le **jeu de Blackjack** en **VHDL**, pour apprendre la conception **numérique** et la **logique séquentielle** de manière ludique.
 
----
+Dans le cadre du semestre 7 le projet VHDL sera de recréer le **jeu de Blackjack**
+
 
 ##  Objectif
 Simuler le fonctionnement d’une partie de **Blackjack** en VHDl sur une carte **NEXYS A7** :
