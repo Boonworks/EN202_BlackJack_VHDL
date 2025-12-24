@@ -1,5 +1,6 @@
 TODO.txt
 Documentation
+EN202_BlackJack_VHDL_TB
 
 EN202_BlackJack_VHDL.cache
 EN202_BlackJack_VHDL.runs
@@ -10,8 +11,5 @@ EN202_BlackJack_VHDL.ip_user_files
 EN202_BlackJack_VHDL.srcs/sim_1
 EN202_BlackJack_VHDL.srcs/utils_1
 
-EN202_BlackJack_VHDL.srcs/sources_1/new/reg_carte.vhd
-EN202_BlackJack_VHDL.srcs/sources_1/new/reg_rank.vhd
-
 EN202_BlackJack_VHDL.srcs/sources_1/new/comparator_bj.vhd
-EN202_BlackJack_VHDL.srcs/sources_1/new/rank_sum.vhd
+
