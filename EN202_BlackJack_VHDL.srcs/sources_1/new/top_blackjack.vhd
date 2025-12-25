@@ -120,7 +120,7 @@ begin
             card_value => card_val,
             score_out => score_croupier );
 
-    -- Win manager
+    -- win manager
     inst_win : entity work.win_manager
         port map (
             score_joueur => score_joueur,
@@ -160,7 +160,7 @@ begin
         if rising_edge(clk) then
             if rst_global = '1' or is_idle = '1' then
                 game_started <= '0';
-                -- Affichage du message BLACK J
+                -- Affichage du message BLAC J
                 digits(0) <= "000" & x"8"; -- B (8)
                 digits(1) <= "000" & x"C"; -- L
                 digits(2) <= "000" & x"A"; -- A
