@@ -84,7 +84,7 @@ begin
             enable_in => '1',
             card_value => card_val );
 
-    -- FSM (Ajout du port is_idle)
+    -- FSM
     inst_fsm : entity work.fsm_bj
         port map (
             clk => clk,
@@ -131,7 +131,7 @@ begin
             draw => draw_sig );
 
     -------------------------------------------------------
-    -- LED RGB (LD16)
+    -- LED (LD16)
     -------------------------------------------------------
     process(win_p, win_d, draw_sig, final_sig, pwm_on)
     begin

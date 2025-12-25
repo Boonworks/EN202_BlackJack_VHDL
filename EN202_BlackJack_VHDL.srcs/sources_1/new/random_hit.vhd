@@ -41,7 +41,7 @@ begin
                     if cnt_rank = 0 then
                         card_reg <= "1011"; -- AS = 11
                     elsif cnt_rank >= 9 then
-                        card_reg <= "1010"; -- 10, Valet, Dame, Roi = 10
+                        card_reg <= "1010"; -- Valet, Dame, Roi = 10
                     else
                         card_reg <= std_logic_vector(cnt_rank + 1); -- 2 to 9
                     end if;

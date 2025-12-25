@@ -5,10 +5,9 @@ use IEEE.NUMERIC_STD.ALL;
 entity gestion_freq is
     Port (  clk           : in  std_logic;
             rst           : in  std_logic;
-            CE_affichage  : out std_logic;
             CE_perception : out std_logic;
             CE_jeu        : out std_logic
-    );
+                );
 end gestion_freq;
 
 architecture Behavioral of gestion_freq is
