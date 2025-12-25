@@ -9,11 +9,9 @@ entity top_blackjack is
         btn_init      : in  std_logic;
         btn_hit       : in  std_logic;
         btn_stand     : in  std_logic;
-        -- Afficheurs
         sept_seg      : out std_logic_vector(6 downto 0);
         AN            : out std_logic_vector(7 downto 0);
         dp            : out std_logic;
-        -- LED RGB (LD16)
         LED16_R       : out std_logic;
         LED16_G       : out std_logic;
         LED16_B       : out std_logic
@@ -37,6 +35,7 @@ architecture Behavioral of top_blackjack is
     -- Signaux FSM et Victoire
     signal standing      : std_logic;
     signal final_sig     : std_logic;
+    signal is_idle       : std_logic; -- Signal pour l'�cran d'accueil
     signal reset_du_jeu  : std_logic;
     signal win_p, win_d, draw_sig : std_logic;
 
@@ -57,57 +56,97 @@ begin
 
     -- Generateurs d'horloges et PWM
     inst_freq : entity work.gestion_freq
-        port map ( clk => clk, rst => rst_global, CE_perception => ce_p, CE_jeu => ce_j );
+        port map (
+            clk => clk,
+            rst => rst_global,
+            CE_perception => ce_p,
+            CE_jeu => ce_j );
 
     process(clk)
         variable blink_cnt : unsigned(23 downto 0) := (others => '0');
     begin
         if rising_edge(clk) then
-            pwm_cnt <= pwm_cnt + 1; -- PWM pour LED RGB
-            blink_cnt := blink_cnt + 1; -- Pour faire clignoter le score
+            pwm_cnt <= pwm_cnt + 1;
+            blink_cnt := blink_cnt + 1;
             blink_sig <= blink_cnt(23);
             load_p_delayed <= load_p;
             load_d_delayed <= load_d;
         end if;
     end process;
-    pwm_on <= '1' when pwm_cnt < 25 else '0'; -- 10% de luminosit�
+    pwm_on <= '1' when pwm_cnt < 25 else '0';
 
-    -- hasard
+    -- Hasard
     inst_rand : entity work.random_hit
-        port map ( clk => clk, rst => rst_global, hit => any_load, enable_in => '1', card_value => card_val );
+        port map (
+            clk => clk,
+            rst => rst_global,
+            hit => any_load,
+            enable_in => '1',
+            card_value => card_val );
 
-    -- FSM
+    -- FSM (Ajout du port is_idle)
     inst_fsm : entity work.fsm_bj
         port map (
-            clk => clk, rst => rst_global, btn_init => btn_init, btn_hit => btn_hit,
-            btn_stand => btn_stand, CE_jeu => ce_j,
-            score_joueur => score_joueur, score_croupier => score_croupier,
-            load_player => load_p, load_dealer => load_d,
-            reset_jeu => reset_du_jeu, is_standing => standing, is_final => final_sig
+            clk => clk,
+            rst => rst_global,
+            btn_init => btn_init,
+            btn_hit => btn_hit,
+            btn_stand => btn_stand,
+            CE_jeu => ce_j,
+            score_joueur => score_joueur,
+            score_croupier => score_croupier,
+            load_player => load_p,
+            load_dealer => load_d,
+            reset_jeu => reset_du_jeu,
+            is_standing => standing,
+            is_final => final_sig,
+            is_idle => is_idle
         );
 
-    -- gestionnaires de scores
+    -- Gestionnaires de scores
     inst_score_p : entity work.score_manager
-        port map ( clk => clk, rst => reset_du_jeu, load_score => load_p_delayed, card_value => card_val, score_out => score_joueur );
+        port map (
+            clk => clk,
+            rst => reset_du_jeu,
+            load_score => load_p_delayed,
+            card_value => card_val,
+            score_out => score_joueur );
 
     inst_score_d : entity work.score_manager
-        port map ( clk => clk, rst => reset_du_jeu, load_score => load_d_delayed, card_value => card_val, score_out => score_croupier );
+        port map (
+            clk => clk,
+            rst => reset_du_jeu,
+            load_score => load_d_delayed,
+            card_value => card_val,
+            score_out => score_croupier );
 
-    -- win manager
+    -- Win manager
     inst_win : entity work.win_manager
-        port map ( score_joueur => score_joueur, score_croupier => score_croupier, is_final => final_sig, win_p => win_p, win_d => win_d, draw => draw_sig );
+        port map (
+            score_joueur => score_joueur,
+            score_croupier => score_croupier,
+            is_final => final_sig,
+            win_p => win_p,
+            win_d => win_d,
+            draw => draw_sig );
 
     -------------------------------------------------------
     -- LED RGB (LD16)
     -------------------------------------------------------
     process(win_p, win_d, draw_sig, final_sig, pwm_on)
     begin
-        LED16_R <= '0'; LED16_G <= '0'; LED16_B <= '0';
+        LED16_R <= '0';
+        LED16_G <= '0';
+        LED16_B <= '0';
         if final_sig = '1' then
-            if win_p = '1' then    LED16_G <= pwm_on; -- VERT : Gagn�
-            elsif win_d = '1' then LED16_R <= pwm_on; -- ROUGE : Perdu
-            elsif draw_sig = '1' then                 -- BLANC : �galit�
-                LED16_R <= pwm_on; LED16_G <= pwm_on; LED16_B <= pwm_on;
+            if win_p = '1' then
+                LED16_G <= pwm_on; -- victoire joueur
+            elsif win_d = '1' then
+                LED16_R <= pwm_on;  -- defaite joueur
+            elsif draw_sig = '1' then
+                LED16_R <= pwm_on;  --draw
+                LED16_G <= pwm_on;
+                LED16_B <= pwm_on;
             end if;
         end if;
     end process;
@@ -119,9 +158,17 @@ begin
         variable s_p, s_d, c_val : integer;
     begin
         if rising_edge(clk) then
-            if rst_global = '1' then
+            if rst_global = '1' or is_idle = '1' then
                 game_started <= '0';
-                digits <= (others => "000" & x"F");
+                -- Affichage du message BLACK J
+                digits(0) <= "000" & x"8"; -- B (8)
+                digits(1) <= "000" & x"C"; -- L
+                digits(2) <= "000" & x"A"; -- A
+                digits(3) <= "000" & x"D"; -- C
+                digits(4) <= "000" & x"F"; -- Vide
+                digits(5) <= "000" & x"E"; -- J
+                digits(6) <= "000" & x"F"; -- vide
+                digits(7) <= "000" & x"F"; -- vide
             else
                 if load_p = '1' then game_started <= '1'; end if;
                 s_p := to_integer(unsigned(score_joueur));
@@ -161,8 +208,26 @@ begin
         end if;
     end process;
 
-    inst_mux8 : entity work.mux8 port map ( commande => cmd_mux, val_0 => digits(0), val_1 => digits(1), val_2 => digits(2), val_3 => digits(3), val_4 => digits(4), val_5 => digits(5), val_6 => digits(6), val_7 => digits(7), sept_seg => chosen_digit, dp => dp );
-    inst_trans : entity work.transcodeur port map ( bin_in => chosen_digit(3 downto 0), segments => sept_seg );
-    inst_mod8 : entity work.mod8 port map ( clk => clk, rst => rst_global, CE_perception => ce_p, AN => AN, commande => cmd_mux );
+    inst_mux8 : entity work.mux8 port map (
+        commande => cmd_mux,
+        val_0 => digits(0),
+        val_1 => digits(1),
+        val_2 => digits(2),
+        val_3 => digits(3),
+        val_4 => digits(4),
+        val_5 => digits(5),
+        val_6 => digits(6),
+        val_7 => digits(7),
+        sept_seg => chosen_digit,
+        dp => dp );
+    inst_trans : entity work.transcodeur port map (
+        bin_in => chosen_digit(3 downto 0),
+        segments => sept_seg );
+    inst_mod8 : entity work.mod8 port map (
+        clk => clk,
+        rst => rst_global,
+        CE_perception => ce_p,
+        AN => AN,
+        commande => cmd_mux );
 
 end Behavioral;

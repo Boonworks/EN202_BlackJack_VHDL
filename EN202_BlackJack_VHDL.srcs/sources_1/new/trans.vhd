@@ -25,6 +25,11 @@ begin
             when "1001" => segments <= "0000100"; -- 9
             when "1010" => segments <= "0001000"; -- A (pour 10)
             when "1011" => segments <= "1100000"; -- b (pour 11)
+
+            when "1100" => segments <= "1110001"; -- L (Code x"C")
+            when "1101" => segments <= "0110001"; -- C (Code x"D")
+            when "1110" => segments <= "1000011"; -- J (Code x"E")
+
             when others => segments <= "1111111"; -- eteint
         end case;
     end process;

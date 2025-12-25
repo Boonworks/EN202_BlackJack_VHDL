@@ -16,45 +16,63 @@ entity fsm_bj is
         load_player   : out std_logic;
         load_dealer   : out std_logic;
         reset_jeu     : out std_logic;
-        is_standing   : out std_logic; -- '1' des que le joueur a fini
-        is_final      : out std_logic  -- '1' quand les jeux sont finis
+        is_standing   : out std_logic; -- '1' qd le joueur a fini
+        is_final      : out std_logic; -- '1' quand les jeux sont finis
+        is_idle       : out std_logic  -- '1' quand on attend le debut
     );
 end fsm_bj;
 
 architecture Behavioral of fsm_bj is
-    type state_type is (READY, START_GAME, WAIT_ACTION, DRAW_CARD, WAIT_1S, CHECK_BUST,
-                        PLAYER_STANDS, DEALER_DRAW, DEALER_WAIT, FINAL_SCORE);
+    type state_type is (
+        READY,
+        START_GAME,
+        WAIT_ACTION,
+        DRAW_CARD,
+        WAIT_1S,
+        CHECK_BUST,
+        PLAYER_STANDS,
+        DEALER_DRAW,
+        DEALER_WAIT,
+        FINAL_SCORE);
     signal state, next_state : state_type;
     signal hit_d, init_d, stand_d : std_logic;
 begin
 
-    -- Registre d'etat et detection de front des boutons
+    -- Registres
     process(clk)
     begin
         if rising_edge(clk) then
             if rst = '1' then
                 state <= READY;
-                hit_d <= '0'; init_d <= '0'; stand_d <= '0';
+                hit_d <= '0';
+                init_d <= '0';
+                stand_d <= '0';
             else
                 state <= next_state;
-                hit_d <= btn_hit; init_d <= btn_init; stand_d <= btn_stand;
+                hit_d <= btn_hit;
+                init_d <= btn_init;
+                stand_d <= btn_stand;
             end if;
         end if;
     end process;
 
-    -- transition
+    -- Logique
     process(state, btn_init, btn_hit, btn_stand, score_joueur, score_croupier, CE_jeu, init_d, hit_d, stand_d)
     begin
+        -- Valeurs par defaut
         next_state   <= state;
         load_player  <= '0';
         load_dealer  <= '0';
         reset_jeu    <= '0';
         is_standing  <= '0';
         is_final     <= '0';
+        is_idle      <= '0';
 
         case state is
+            -- etat d'attente : Affichage du message "BLAC J"
             when READY =>
                 reset_jeu <= '1';
+                is_idle   <= '1';
                 if (btn_init = '1' and init_d = '0') then
                     next_state <= START_GAME;
                 end if;
@@ -62,6 +80,7 @@ begin
             when START_GAME =>
                 next_state <= WAIT_ACTION;
 
+            -- Tour du Joueur
             when WAIT_ACTION =>
                 if (btn_hit = '1' and hit_d = '0') then
                     next_state <= DRAW_CARD;
@@ -79,17 +98,18 @@ begin
                 end if;
 
             when CHECK_BUST =>
-                -- SI BUST JOUEUR : ON ARRETE
+                -- bust  (>21) => fin
                 if unsigned(score_joueur) > 21 then
                     next_state <= FINAL_SCORE;
                 else
                     next_state <= WAIT_ACTION;
                 end if;
 
+            -- Croupier
             when PLAYER_STANDS =>
                 is_standing <= '1';
                 if CE_jeu = '1' then
-                    -- Le croupier s'arrete � 17
+                    -- tirer si score < 17
                     if unsigned(score_croupier) < 17 then
                         next_state <= DEALER_DRAW;
                     else
@@ -108,16 +128,16 @@ begin
                     next_state <= PLAYER_STANDS;
                 end if;
 
+            -- comparaison et LED RGB
             when FINAL_SCORE =>
                 is_standing <= '1';
                 is_final    <= '1';
                 if (btn_init = '1' and init_d = '0') then
-                    next_state <= READY;
+                    next_state <= READY; -- Retour accueil
                 end if;
 
             when others =>
                 next_state <= READY;
         end case;
     end process;
-
 end Behavioral;
