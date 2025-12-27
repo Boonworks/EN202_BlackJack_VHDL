@@ -34,7 +34,7 @@ begin
 
     commande <= std_logic_vector(s_count_val);
 
-    -- d�codage AN (actif bas)
+    -- decodage AN (actif bas)
     process(s_count_val)
     begin
         case s_count_val is

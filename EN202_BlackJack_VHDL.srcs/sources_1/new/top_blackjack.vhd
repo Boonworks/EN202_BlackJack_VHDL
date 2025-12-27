@@ -124,9 +124,7 @@ begin
             win_d => win_d,
             draw => draw_sig );
 
-    -------------------------------------------------------
     -- LED (LD16)
-    -------------------------------------------------------
     process(win_p, win_d, draw_sig, final_sig, pwm_on)
     begin
         LED16_R <= '0';
@@ -145,9 +143,7 @@ begin
         end if;
     end process;
 
-    -------------------------------------------------------
     -- AFFICHAGE
-    -------------------------------------------------------
     process(clk)
         variable s_p, s_d, c_val : integer;
     begin
