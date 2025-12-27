@@ -28,15 +28,15 @@ architecture Behavioral of top_blackjack is
 
     -- Scores
     signal load_p, load_p_delayed : std_logic;
-    signal score_joueur           : std_logic_vector(7 downto 0);
+    signal score_player           : std_logic_vector(7 downto 0);
     signal load_d, load_d_delayed : std_logic;
-    signal score_croupier         : std_logic_vector(7 downto 0);
+    signal score_dealer         : std_logic_vector(7 downto 0);
 
     -- Signaux FSM et Victoire
     signal standing      : std_logic;
     signal final_sig     : std_logic;
-    signal is_idle       : std_logic; -- Signal pour l'�cran d'accueil
-    signal reset_du_jeu  : std_logic;
+    signal is_idle       : std_logic; -- Signal pour l'ecran d'accueil
+    signal rst_game  : std_logic;
     signal win_p, win_d, draw_sig : std_logic;
 
     -- Affichage
@@ -55,8 +55,7 @@ begin
     any_load   <= load_p or load_d;
 
     -- Generateurs d'horloges et PWM
-    inst_freq : entity work.gestion_freq
-        port map (
+    freq : entity work.gestion_freq port map (
             clk => clk,
             rst => rst_global,
             CE_perception => ce_p,
@@ -76,8 +75,7 @@ begin
     pwm_on <= '1' when pwm_cnt < 25 else '0';
 
     -- Hasard
-    inst_rand : entity work.random_hit
-        port map (
+    rand_hit : entity work.random_hit port map (
             clk => clk,
             rst => rst_global,
             hit => any_load,
@@ -85,46 +83,42 @@ begin
             card_value => card_val );
 
     -- FSM
-    inst_fsm : entity work.fsm_bj
-        port map (
+    fsm : entity work.fsm_bj port map (
             clk => clk,
             rst => rst_global,
             btn_init => btn_init,
             btn_hit => btn_hit,
             btn_stand => btn_stand,
             CE_jeu => ce_j,
-            score_joueur => score_joueur,
-            score_croupier => score_croupier,
+            score_player => score_player,
+            score_dealer => score_dealer,
             load_player => load_p,
             load_dealer => load_d,
-            reset_jeu => reset_du_jeu,
+            reset_game => rst_game,
             is_standing => standing,
             is_final => final_sig,
             is_idle => is_idle
         );
 
     -- Gestionnaires de scores
-    inst_score_p : entity work.score_manager
-        port map (
+    score_p : entity work.score_manager port map (
             clk => clk,
-            rst => reset_du_jeu,
+            rst => rst_game,
             load_score => load_p_delayed,
             card_value => card_val,
-            score_out => score_joueur );
+            score_out => score_player );
 
-    inst_score_d : entity work.score_manager
-        port map (
+    score_d : entity work.score_manager port map (
             clk => clk,
-            rst => reset_du_jeu,
+            rst => rst_game,
             load_score => load_d_delayed,
             card_value => card_val,
-            score_out => score_croupier );
+            score_out => score_dealer );
 
     -- win manager
-    inst_win : entity work.win_manager
-        port map (
-            score_joueur => score_joueur,
-            score_croupier => score_croupier,
+    win : entity work.win_manager port map (
+            score_player => score_player,
+            score_dealer => score_dealer,
             is_final => final_sig,
             win_p => win_p,
             win_d => win_d,
@@ -171,8 +165,8 @@ begin
                 digits(7) <= "000" & x"F"; -- vide
             else
                 if load_p = '1' then game_started <= '1'; end if;
-                s_p := to_integer(unsigned(score_joueur));
-                s_d := to_integer(unsigned(score_croupier));
+                s_p := to_integer(unsigned(score_player));
+                s_d := to_integer(unsigned(score_dealer));
                 c_val := to_integer(unsigned(card_val));
 
                 -- JOUEUR
@@ -208,7 +202,7 @@ begin
         end if;
     end process;
 
-    inst_mux8 : entity work.mux8 port map (
+    multiplex8 : entity work.mux8 port map (
         commande => cmd_mux,
         val_0 => digits(0),
         val_1 => digits(1),
@@ -220,10 +214,12 @@ begin
         val_7 => digits(7),
         sept_seg => chosen_digit,
         dp => dp );
-    inst_trans : entity work.transcodeur port map (
+
+    trans : entity work.transcodeur port map (
         bin_in => chosen_digit(3 downto 0),
         segments => sept_seg );
-    inst_mod8 : entity work.mod8 port map (
+
+    modul8 : entity work.mod8 port map (
         clk => clk,
         rst => rst_global,
         CE_perception => ce_p,

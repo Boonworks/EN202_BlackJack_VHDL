@@ -4,8 +4,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity win_manager is
     Port (
-        score_joueur   : in  std_logic_vector(7 downto 0);
-        score_croupier : in  std_logic_vector(7 downto 0);
+        score_player   : in  std_logic_vector(7 downto 0);
+        score_dealer : in  std_logic_vector(7 downto 0);
         is_final       : in  std_logic;
         win_p          : out std_logic; -- Joueur gagne
         win_d          : out std_logic; -- Croupier gagne
@@ -15,12 +15,12 @@ end win_manager;
 
 architecture Behavioral of win_manager is
 begin
-    process(score_joueur, score_croupier, is_final)
+    process(score_player, score_dealer, is_final)
         variable s_p, s_d : integer;
     begin
         win_p <= '0'; win_d <= '0'; draw  <= '0';
-        s_p := to_integer(unsigned(score_joueur));
-        s_d := to_integer(unsigned(score_croupier));
+        s_p := to_integer(unsigned(score_player));
+        s_d := to_integer(unsigned(score_dealer));
 
         if is_final = '1' then
             if s_p > 21 then           win_d <= '1'; -- Joueur Bust

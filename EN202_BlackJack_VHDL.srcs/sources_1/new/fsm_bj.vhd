@@ -10,12 +10,12 @@ entity fsm_bj is
         btn_hit       : in  std_logic;
         btn_stand     : in  std_logic;
         CE_jeu        : in  std_logic;
-        score_joueur  : in  std_logic_vector(7 downto 0);
-        score_croupier : in  std_logic_vector(7 downto 0);
+        score_player  : in  std_logic_vector(7 downto 0);
+        score_dealer : in  std_logic_vector(7 downto 0);
 
         load_player   : out std_logic;
         load_dealer   : out std_logic;
-        reset_jeu     : out std_logic;
+        reset_game     : out std_logic;
         is_standing   : out std_logic; -- '1' qd le joueur a fini
         is_final      : out std_logic; -- '1' quand les jeux sont finis
         is_idle       : out std_logic  -- '1' quand on attend le debut
@@ -57,13 +57,13 @@ begin
     end process;
 
     -- Logique
-    process(state, btn_init, btn_hit, btn_stand, score_joueur, score_croupier, CE_jeu, init_d, hit_d, stand_d)
+    process(state, btn_init, btn_hit, btn_stand, score_player, score_dealer, CE_jeu, init_d, hit_d, stand_d)
     begin
         -- Valeurs par defaut
         next_state   <= state;
         load_player  <= '0';
         load_dealer  <= '0';
-        reset_jeu    <= '0';
+        reset_game    <= '0';
         is_standing  <= '0';
         is_final     <= '0';
         is_idle      <= '0';
@@ -71,7 +71,7 @@ begin
         case state is
             -- etat d'attente : Affichage du message "BLAC J"
             when READY =>
-                reset_jeu <= '1';
+                reset_game <= '1';
                 is_idle   <= '1';
                 if (btn_init = '1' and init_d = '0') then
                     next_state <= START_GAME;
@@ -99,7 +99,7 @@ begin
 
             when CHECK_BUST =>
                 -- bust  (>21) => fin
-                if unsigned(score_joueur) > 21 then
+                if unsigned(score_player) > 21 then
                     next_state <= FINAL_SCORE;
                 else
                     next_state <= WAIT_ACTION;
@@ -110,7 +110,7 @@ begin
                 is_standing <= '1';
                 if CE_jeu = '1' then
                     -- tirer si score < 17
-                    if unsigned(score_croupier) < 17 then
+                    if unsigned(score_dealer) < 17 then
                         next_state <= DEALER_DRAW;
                     else
                         next_state <= FINAL_SCORE;
