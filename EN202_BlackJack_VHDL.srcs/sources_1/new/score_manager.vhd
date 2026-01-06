@@ -23,8 +23,8 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                current_score <= 0;
-                ace_count <= 0;
+                current_score   <= 0;
+                ace_count       <= 0;
             elsif load_score = '1' then
                 temp_score := current_score;
                 temp_aces  := ace_count;

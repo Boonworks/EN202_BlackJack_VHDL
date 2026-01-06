@@ -16,7 +16,6 @@ architecture Behavioral of tb_random_hit is
     constant CLK_PERIOD : time := 10 ns;
 
 begin
-
     uut : entity work.random_hit
         port map (
             clk        => clk,
@@ -30,28 +29,24 @@ begin
 
     stimulus : process
     begin
-
         wait for 30 ns;
 
         -- hit 1
         hit <= '1';
         wait for 10 ns;
         hit <= '0';
-
         wait for 40 ns;
 
         -- hit 2
         hit <= '1';
         wait for 10 ns;
         hit <= '0';
-
         wait for 35 ns;
 
         -- hit 3
         hit <= '1';
         wait for 10 ns;
         hit <= '0';
-
         wait;
     end process;
 

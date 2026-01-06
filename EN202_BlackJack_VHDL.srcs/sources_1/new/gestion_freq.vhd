@@ -7,7 +7,7 @@ entity gestion_freq is
             rst           : in  std_logic;
             CE_perception : out std_logic;
             CE_jeu        : out std_logic
-                );
+        );
 end gestion_freq;
 
 architecture Behavioral of gestion_freq is
@@ -19,14 +19,16 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                count_perc <= (others => '0');
-                CE_perception <= '0';
+                count_perc      <= (others => '0');
+                CE_perception   <= '0';
+
             elsif count_perc = x"C34F" then -- 50 000 cycles
-                count_perc <= (others => '0');
-                CE_perception <= '1';
+                count_perc      <= (others => '0');
+                CE_perception   <= '1';
+
             else
-                count_perc <= count_perc + 1;
-                CE_perception <= '0';
+                count_perc      <= count_perc + 1;
+                CE_perception   <= '0';
             end if;
         end if;
     end process;
@@ -35,15 +37,17 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                count_jeu <= (others => '0');
-                CE_jeu <= '0';
-            -- 100 000 000 cycles = 1 seconde
+                count_jeu   <= (others => '0');
+                CE_jeu      <= '0';
+
+            -- 100 000 000 cycles
             elsif count_jeu = 99999999 then
-                count_jeu <= (others => '0');
-                CE_jeu <= '1';
+                count_jeu   <= (others => '0');
+                CE_jeu      <= '1';
+
             else
-                count_jeu <= count_jeu + 1;
-                CE_jeu <= '0';
+                count_jeu   <= count_jeu + 1;
+                CE_jeu      <= '0';
             end if;
         end if;
     end process;

@@ -29,7 +29,7 @@ begin
             when "100" => sept_seg <= val_4; dp <= '1';
             when "101" => sept_seg <= val_5; dp <= '1';
             when "110" => sept_seg <= val_6; dp <= '1';
-            when others => sept_seg <= val_7; dp <= '1';
+            when others=> sept_seg <= val_7; dp <= '1';
         end case;
     end process;
 end Behavioral;

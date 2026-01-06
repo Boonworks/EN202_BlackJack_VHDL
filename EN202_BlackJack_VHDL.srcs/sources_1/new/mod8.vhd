@@ -21,9 +21,9 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                s_count_val <= (others => '0');
+                s_count_val     <= (others => '0');
             elsif CE_perception = '1' then
-                if s_count_val = "111" then
+                if s_count_val  = "111" then
                     s_count_val <= (others => '0');
                 else
                     s_count_val <= s_count_val + 1;

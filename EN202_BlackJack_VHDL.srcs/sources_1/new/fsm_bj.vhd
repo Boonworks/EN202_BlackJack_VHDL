@@ -11,11 +11,11 @@ entity fsm_bj is
         btn_stand     : in  std_logic;
         CE_jeu        : in  std_logic;
         score_player  : in  std_logic_vector(7 downto 0);
-        score_dealer : in  std_logic_vector(7 downto 0);
+        score_dealer  : in  std_logic_vector(7 downto 0);
 
         load_player   : out std_logic;
         load_dealer   : out std_logic;
-        reset_game     : out std_logic;
+        reset_game    : out std_logic;
         is_standing   : out std_logic; -- '1' qd le joueur a fini
         is_final      : out std_logic; -- '1' quand les jeux sont finis
         is_idle       : out std_logic  -- '1' quand on attend le debut
@@ -43,14 +43,14 @@ begin
     begin
         if rising_edge(clk) then
             if rst = '1' then
-                state <= READY;
-                hit_d <= '0';
-                init_d <= '0';
+                state   <= READY;
+                hit_d   <= '0';
+                init_d  <= '0';
                 stand_d <= '0';
             else
-                state <= next_state;
-                hit_d <= btn_hit;
-                init_d <= btn_init;
+                state   <= next_state;
+                hit_d   <= btn_hit;
+                init_d  <= btn_init;
                 stand_d <= btn_stand;
             end if;
         end if;
@@ -63,18 +63,19 @@ begin
         next_state   <= state;
         load_player  <= '0';
         load_dealer  <= '0';
-        reset_game    <= '0';
+        reset_game   <= '0';
         is_standing  <= '0';
         is_final     <= '0';
         is_idle      <= '0';
 
         case state is
-            -- etat d'attente : Affichage du message "BLAC J"
+            -- attente => message "8LAC J"
             when READY =>
-                reset_game <= '1';
-                is_idle   <= '1';
+                reset_game      <= '1';
+                is_idle         <= '1';
+
                 if (btn_init = '1' and init_d = '0') then
-                    next_state <= START_GAME;
+                    next_state  <= START_GAME;
                 end if;
 
             when START_GAME =>
@@ -84,13 +85,14 @@ begin
             when WAIT_ACTION =>
                 if (btn_hit = '1' and hit_d = '0') then
                     next_state <= DRAW_CARD;
+
                 elsif (btn_stand = '1' and stand_d = '0') then
                     next_state <= PLAYER_STANDS;
                 end if;
 
             when DRAW_CARD =>
                 load_player <= '1';
-                next_state <= WAIT_1S;
+                next_state  <= WAIT_1S;
 
             when WAIT_1S =>
                 if CE_jeu = '1' then
@@ -120,20 +122,21 @@ begin
             when DEALER_DRAW =>
                 is_standing <= '1';
                 load_dealer <= '1';
-                next_state <= DEALER_WAIT;
+                next_state  <= DEALER_WAIT;
 
             when DEALER_WAIT =>
-                is_standing <= '1';
+                is_standing     <= '1';
+
                 if CE_jeu = '1' then
-                    next_state <= PLAYER_STANDS;
+                    next_state  <= PLAYER_STANDS;
                 end if;
 
             -- comparaison et LED RGB
             when FINAL_SCORE =>
-                is_standing <= '1';
-                is_final    <= '1';
+                is_standing     <= '1';
+                is_final        <= '1';
                 if (btn_init = '1' and init_d = '0') then
-                    next_state <= READY; -- Retour accueil
+                    next_state  <= READY; -- Retour accueil
                 end if;
 
             when others =>

@@ -47,7 +47,7 @@ begin
         load_score <= '0';
         wait for 30 ns;
 
-        card_value <= "1011";  -- AS = 1 ici
+        card_value <= "1011";  -- As = 1 ici
         load_score <= '1';
         wait for 10 ns;
         load_score <= '0';
@@ -64,7 +64,7 @@ begin
         load_score <= '0';
         wait for 30 ns;
 
-        card_value <= "1011";  -- AS = 11 ici
+        card_value <= "1011";  -- As = 11 ici
         load_score <= '1';
         wait for 10 ns;
         load_score <= '0';
